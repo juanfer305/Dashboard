@@ -68,6 +68,7 @@
         <div class="card">
           <h3>Gastos por categoría</h3>
           <canvas id="chartCategorias" height="140"></canvas>
+          <div id="categoryBreakdown" class="category-breakdown"></div>
         </div>
       </div>
 
@@ -100,6 +101,7 @@
           <option value="">Toda categoría</option>
         </select>
         <input type="search" id="filterSearch" aria-label="Buscar por descripción" placeholder="Buscar por descripción…">
+        <button class="btn-ghost" id="openCategoryModal" type="button">Administrar categorías</button>
       </div>
 
       <div class="card">
@@ -189,6 +191,45 @@
   </main>
 </div>
 
+<!-- MODAL: categorías -->
+<div class="modal-backdrop hidden" id="categoryModal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3>Categorías</h3>
+      <button class="modal-close" data-close="categoryModal">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="categoryForm">
+        <div class="form-row">
+          <label>
+            <span>Nombre</span>
+            <input type="text" name="nombre" required placeholder="Ej. Vestuario, Transporte…">
+          </label>
+          <label>
+            <span>Tipo</span>
+            <select name="tipo" required>
+              <option value="gasto">Gasto</option>
+              <option value="ingreso">Ingreso</option>
+            </select>
+          </label>
+        </div>
+        <label class="form-row-full">
+          <span>Descripción</span>
+          <input type="text" name="descripcion" placeholder="Opcional">
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" data-close="categoryModal">Cerrar</button>
+          <button type="submit" class="btn-primary">Guardar categoría</button>
+        </div>
+      </form>
+      <div class="category-list-panel">
+        <h4>Categorías existentes</h4>
+        <div id="categoryList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: movimiento -->
 <div class="modal-backdrop hidden" id="txModal">
   <div class="modal">
@@ -217,8 +258,9 @@
         </label>
         <label>
           <span>Categoría</span>
-          <input type="text" name="categoria" list="categoriaList" placeholder="Ej. Servicios, Transporte…" required>
-          <datalist id="categoriaList"></datalist>
+          <select name="categoria" id="txCategoriaSelect" required>
+            <option value="">Selecciona una categoría</option>
+          </select>
         </label>
       </div>
       <label class="form-row-full">
@@ -468,7 +510,9 @@
         </label>
         <label>
           <span>Categoría</span>
-          <input type="text" name="edit-tx-categoria" placeholder="Ej. Servicios…" required>
+          <select name="edit-tx-categoria" id="editTxCategoriaSelect" required>
+            <option value="">Selecciona una categoría</option>
+          </select>
         </label>
       </div>
       <label class="form-row-full">

@@ -10,6 +10,7 @@ const state = {
   clientes: [],
   cuentas: [],
   creditos: [],
+  categorias: [],
 };
 
 const fmtCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -143,15 +144,49 @@ function renderMovimientosTable() {
 }
 
 function renderCategoriaOptions() {
-  const cats = [...new Set(state.movimientos.map(m => m.categoria))].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+  const cats = state.categorias.map(c => c.nombre).sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
   const filterSel = document.getElementById('filterCategory');
-  const datalist = document.getElementById('categoriaList');
+  const txSelect = document.getElementById('txCategoriaSelect');
+  const editSelect = document.getElementById('editTxCategoriaSelect');
   const currentFilterVal = filterSel.value;
 
   filterSel.innerHTML = '<option value="">Toda categoría</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
   filterSel.value = currentFilterVal;
 
-  datalist.innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
+  const options = '<option value="">Selecciona una categoría</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  if (txSelect) txSelect.innerHTML = options;
+  if (editSelect) editSelect.innerHTML = options;
+}
+
+async function loadCategorias() {
+  const { data, error } = await window.sb.from('categorias').select('*').order('nombre');
+  if (error) { console.error(error); return; }
+  state.categorias = data || [];
+  renderCategoriaOptions();
+  renderCategoryList();
+}
+
+function renderCategoryList() {
+  const container = document.getElementById('categoryList');
+  container.innerHTML = state.categorias.map(c => `
+    <div class="category-item">
+      <div>
+        <strong>${escapeHtml(c.nombre)}</strong>
+        <p>${escapeHtml(c.descripcion || '')}</p>
+      </div>
+      <span class="badge ${c.tipo}">${c.tipo}</span>
+    </div>
+  `).join('');
+}
+
+async function saveCategoria(payload) {
+  const { error } = await window.sb.from('categorias').insert(payload);
+  if (error) {
+    toast('Error al guardar categoría: ' + error.message, 'error');
+    return false;
+  }
+  toast('Categoría guardada', 'success');
+  return true;
 }
 
 async function deleteMovimiento(id) {
@@ -226,6 +261,25 @@ document.getElementById('openTxModal').addEventListener('click', () => {
   openModal('txModal');
 });
 
+document.getElementById('openCategoryModal').addEventListener('click', () => {
+  document.getElementById('categoryForm').reset();
+  openModal('categoryModal');
+});
+
+document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = {
+    nombre: fd.get('nombre'),
+    tipo: fd.get('tipo'),
+    descripcion: fd.get('descripcion'),
+  };
+  const succeeded = await saveCategoria(payload);
+  if (!succeeded) return;
+  closeModal('categoryModal');
+  loadCategorias();
+});
+
 document.getElementById('txForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
@@ -291,6 +345,15 @@ function renderCharts() {
     },
     options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
   });
+
+  const breakdown = document.getElementById('categoryBreakdown');
+  const entries = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  breakdown.innerHTML = entries.length ? entries.map(([cat, total]) => `
+    <div class="category-summary-row">
+      <span>${escapeHtml(cat)}</span>
+      <strong>${fmtCOP(total)}</strong>
+    </div>
+  `).join('') : '<p class="empty-state">No hay gastos por categoría este mes.</p>';
 }
 
 function sumMonth(date, tipo) {
@@ -668,4 +731,4 @@ document.querySelectorAll('.modal-backdrop').forEach(bd => {
 // Init
 // ============================================
 await checkConnection();
-await Promise.all([loadMovimientos(), loadClientes(), loadCuentas(), loadCreditos()]);
+await Promise.all([loadMovimientos(), loadClientes(), loadCuentas(), loadCreditos(), loadCategorias()]);

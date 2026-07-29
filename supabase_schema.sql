@@ -52,6 +52,14 @@ create table if not exists creditos (
   created_at timestamptz default now()
 );
 
+alter table creditos enable row level security;
+create policy "Acceso abierto - creditos" on creditos
+  for all using (true) with check (true);
+
+alter table categorias enable row level security;
+create policy "Acceso abierto - categorias" on categorias
+  for all using (true) with check (true);
+
 -- ============================================
 -- Storage bucket
 -- Supabase Storage no crea buckets por SQL. Crea uno manualmente en el dashboard:
