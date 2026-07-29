@@ -3,6 +3,14 @@
 -- Ejecuta esto en Supabase: Project → SQL Editor → New query
 -- ============================================
 
+create table if not exists categorias (
+  id uuid primary key default gen_random_uuid(),
+  nombre text not null unique,
+  descripcion text,
+  tipo text check (tipo in ('ingreso', 'gasto')),
+  created_at timestamptz default now()
+);
+
 create table if not exists movimientos (
   id uuid primary key default gen_random_uuid(),
   tipo text not null check (tipo in ('ingreso', 'gasto')),

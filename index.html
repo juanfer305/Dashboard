@@ -275,6 +275,39 @@
 
 <div class="toast hidden" id="toast"></div>
 
+<!-- MODAL: editar cuenta de cobro -->
+<div class="modal-backdrop hidden" id="editCuentaModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Editar cuenta de cobro</h3>
+      <button class="modal-close" data-close="editCuentaModal">×</button>
+    </div>
+    <form id="editCuentaForm">
+      <label class="form-row-full">
+        <span>Descripción</span>
+        <input type="text" name="edit-descripcion" required>
+      </label>
+      <div class="form-row">
+        <label>
+          <span>Valor (COP)</span>
+          <input type="number" name="edit-valor" min="0" step="1" required>
+        </label>
+        <label>
+          <span>Estado</span>
+          <select name="edit-estado">
+            <option value="pendiente">Pendiente</option>
+            <option value="enviada">Enviada</option>
+          </select>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="editCuentaModal">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Estado y datos que la app va a leer/inyectar para render-pdf (localStorage key esperada por tu API) -->
 <div id="invoice-preview" style="display:none;"></div>
 
