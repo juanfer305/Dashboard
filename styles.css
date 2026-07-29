@@ -236,7 +236,7 @@ body::before{
   cursor:pointer;
   transition:background .15s ease;
 }
-.btn-primary:hover{background:#0097A7;}
+.btn-primary:hover{background:#0288A0;}
 .btn-ghost{
   background:none;
   border:1px solid var(--line);
@@ -290,7 +290,7 @@ body::before{
 .badge.ingreso{background:var(--green-soft); color:var(--green);}
 .badge.gasto{background:var(--red-soft); color:var(--red);}
 .badge.enviada{background:var(--green-soft); color:var(--green);}
-.badge.pendiente{background:#F3EAD3; color:var(--gold);}
+.badge.pendiente{background:var(--red-soft); color:var(--red);}
 .icon-btn{background:none;border:none;cursor:pointer;font-size:14px;color:var(--muted);}
 .icon-btn:hover{color:var(--red);}
 
@@ -350,7 +350,7 @@ input,select{
   font-size:14px;
   background:var(--paper);
 }
-input:focus,select:focus{outline:2px solid var(--gold); outline-offset:1px;}
+input:focus,select:focus{outline:2px solid var(--red); outline-offset:1px;}
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
 .modal-actions.space-between{justify-content:space-between;align-items:center;}
 .ai-input-row{display:flex;gap:8px;}
@@ -381,6 +381,83 @@ input:focus,select:focus{outline:2px solid var(--gold); outline-offset:1px;}
   .grid-2{grid-template-columns:1fr;}
   .ledger-strip{grid-template-columns:1fr;}
   .ledger-col{border-right:none;border-bottom:1px dashed var(--line);}
+  .view-head{flex-direction:column;align-items:flex-start;gap:16px;}
+  .month-picker{width:100%;}
+  .tx-table{font-size:13px;}
+  .tx-table th{font-size:10px;}
+  .tx-table td{padding:10px 8px;}
+  .actions-cell{flex-direction:column;gap:4px;}
+  .btn-sm{padding:6px 10px;font-size:12px;}
+  .filters{flex-direction:column;gap:8px;}
+  .filters select, .filters input{font-size:13px;}
+}
+
+@media (max-width:640px){
+  .app{grid-template-columns:1fr;}
+  .main{padding:16px;}
+  .ledger-spine{padding:12px 16px;}
+  .spine-mark{font-size:24px;margin-bottom:4px;}
+  .spine-nav{gap:4px;flex-wrap:wrap;}
+  .nav-item{padding:8px 10px;font-size:13px;}
+  .view-head{margin-bottom:16px;}
+  .view-head h2{font-size:24px;}
+  .eyebrow{font-size:10px;}
+  .card{padding:16px;margin-bottom:12px;}
+  .card h3{font-size:15px;margin-bottom:12px;}
+  .ledger-strip{margin-bottom:16px;}
+  .ledger-col{padding:16px;}
+  .ledger-amount{font-size:24px;}
+  .grid-2{gap:12px;margin-bottom:12px;}
+  .tx-table{font-size:12px;}
+  .tx-table th{font-size:9px;padding:6px 8px;}
+  .tx-table td{padding:8px 6px;}
+  .tx-table .right{text-align:right;}
+  .badge{font-size:10px;padding:2px 7px;}
+  .actions-cell{gap:3px;}
+  .btn-sm{padding:5px 8px;font-size:11px;}
+  .btn-ghost, .btn-primary{padding:8px 12px;font-size:13px;}
+  .modal{max-width:calc(100% - 20px);padding:18px 16px;}
+  .modal-wide{max-width:calc(100% - 20px);}
+  .form-row{grid-template-columns:1fr;gap:10px;}
+  label span{font-size:12px;}
+  input, select{padding:8px 10px;font-size:13px;}
+  .ai-input-row{flex-direction:column;}
+  .ai-input-row input{flex:1;}
+  .ai-input-row button{width:100%;}
+  .filters select, .filters input{padding:8px 10px;font-size:12px;}
+  .client-grid{grid-template-columns:1fr;}
+  .toast{bottom:16px;right:16px;padding:10px 16px;font-size:13px;}
+  .month-picker{flex-wrap:wrap;}
+  .month-picker button{width:24px;height:24px;font-size:14px;}
+}
+
+@media (max-width:480px){
+  .main{padding:12px;}
+  .ledger-spine{padding:10px 12px;}
+  .spine-mark{font-size:20px;}
+  .spine-nav{gap:2px;}
+  .nav-item{padding:6px 8px;font-size:12px;}
+  .view-head h2{font-size:20px;margin-bottom:12px;}
+  .eyebrow{font-size:9px;}
+  .card{padding:12px;margin-bottom:10px;}
+  .card h3{font-size:14px;}
+  .ledger-strip{margin-bottom:12px;}
+  .ledger-col{padding:12px;}
+  .ledger-amount{font-size:20px;}
+  .ledger-label{font-size:10px;}
+  .tx-table{font-size:11px;}
+  .tx-table th{font-size:8px;padding:4px 6px;}
+  .tx-table td{padding:6px 4px;}
+  .badge{font-size:9px;padding:2px 5px;}
+  .actions-cell{gap:2px;}
+  .btn-sm{padding:4px 6px;font-size:10px;}
+  .btn-ghost, .btn-primary{padding:7px 10px;font-size:12px;}
+  .modal{max-width:calc(100% - 12px);padding:14px 12px;}
+  .modal-head h3{font-size:16px;}
+  label span{font-size:11px;margin-bottom:4px;}
+  input, select{padding:7px 8px;font-size:12px;}
+  .filters select, .filters input{padding:6px 8px;font-size:11px;}
+  .modal-actions{gap:6px;}
 }
 
 @media (prefers-reduced-motion: reduce){
