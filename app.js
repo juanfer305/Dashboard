@@ -127,10 +127,16 @@ function renderMovimientosTable() {
       <td>${escapeHtml(m.categoria)}</td>
       <td><span class="badge ${m.tipo}">${m.tipo}</span></td>
       <td class="right">${fmtCOP(m.monto)}</td>
-      <td><button class="icon-btn" data-del-tx="${m.id}">✕</button></td>
+      <td class="actions-cell">
+        <button class="btn-ghost btn-sm" data-edit-tx="${m.id}">Editar</button>
+        <button class="btn-danger btn-sm" data-del-tx="${m.id}">Borrar</button>
+      </td>
     </tr>
   `).join('');
 
+  tbody.querySelectorAll('[data-edit-tx]').forEach(btn => {
+    btn.addEventListener('click', () => openEditMovimientoModal(btn.dataset.editTx));
+  });
   tbody.querySelectorAll('[data-del-tx]').forEach(btn => {
     btn.addEventListener('click', () => deleteMovimiento(btn.dataset.delTx));
   });
@@ -149,11 +155,56 @@ function renderCategoriaOptions() {
 }
 
 async function deleteMovimiento(id) {
+  if (!confirm('¿Estás seguro de que quieres borrar este movimiento?')) return;
+
   const { error } = await window.sb.from('movimientos').delete().eq('id', id);
   if (error) { toast('No se pudo eliminar', 'error'); return; }
   toast('Movimiento eliminado');
   loadMovimientos();
 }
+
+async function openEditMovimientoModal(movimientoId) {
+  const movimiento = state.movimientos.find(m => String(m.id) === String(movimientoId));
+  if (!movimiento) return;
+
+  const modal = document.getElementById('editMovimientoModal');
+  if (!modal) {
+    console.error('Modal de edición de movimiento no encontrado');
+    return;
+  }
+
+  document.querySelector('#editMovimientoForm [name="edit-tx-tipo"]').value = movimiento.tipo || 'ingreso';
+  document.querySelector('#editMovimientoForm [name="edit-tx-monto"]').value = movimiento.monto || 0;
+  document.querySelector('#editMovimientoForm [name="edit-tx-fecha"]').value = movimiento.fecha || '';
+  document.querySelector('#editMovimientoForm [name="edit-tx-categoria"]').value = movimiento.categoria || '';
+  document.querySelector('#editMovimientoForm [name="edit-tx-descripcion"]').value = movimiento.descripcion || '';
+  document.getElementById('editMovimientoForm').dataset.movimientoId = movimientoId;
+
+  openModal('editMovimientoModal');
+}
+
+document.getElementById('editMovimientoForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const movimientoId = e.target.dataset.movimientoId;
+  const fd = new FormData(e.target);
+
+  const { error } = await window.sb.from('movimientos').update({
+    tipo: fd.get('edit-tx-tipo'),
+    monto: Number(fd.get('edit-tx-monto')),
+    fecha: fd.get('edit-tx-fecha'),
+    categoria: fd.get('edit-tx-categoria'),
+    descripcion: fd.get('edit-tx-descripcion'),
+  }).eq('id', movimientoId);
+
+  if (error) {
+    toast('Error al actualizar: ' + error.message, 'error');
+    return;
+  }
+
+  toast('Movimiento actualizado', 'success');
+  closeModal('editMovimientoModal');
+  loadMovimientos();
+});
 
 document.getElementById('filterType').addEventListener('change', renderMovimientosTable);
 document.getElementById('filterCategory').addEventListener('change', renderMovimientosTable);
@@ -272,9 +323,75 @@ function renderClientes() {
       <p>${escapeHtml(c.documento || 'Sin documento')}</p>
       <p>${escapeHtml(c.correo || '')}</p>
       <p>${escapeHtml(c.ciudad || '')}</p>
+      <div class="client-card-actions">
+        <button class="btn-ghost btn-sm" data-edit-client="${c.id}">Editar</button>
+        <button class="btn-danger btn-sm" data-del-client="${c.id}">Borrar</button>
+      </div>
     </div>
   `).join('');
+
+  grid.querySelectorAll('[data-edit-client]').forEach(btn => {
+    btn.addEventListener('click', () => openEditClientModal(btn.dataset.editClient));
+  });
+  grid.querySelectorAll('[data-del-client]').forEach(btn => {
+    btn.addEventListener('click', () => deleteCliente(btn.dataset.delClient));
+  });
 }
+
+async function openEditClientModal(clienteId) {
+  const cliente = state.clientes.find(c => String(c.id) === String(clienteId));
+  if (!cliente) return;
+
+  const modal = document.getElementById('editClientModal');
+  if (!modal) {
+    console.error('Modal de edición de cliente no encontrado');
+    return;
+  }
+
+  document.querySelector('#editClientForm [name="edit-nombre"]').value = cliente.nombre || '';
+  document.querySelector('#editClientForm [name="edit-documento"]').value = cliente.documento || '';
+  document.querySelector('#editClientForm [name="edit-correo"]').value = cliente.correo || '';
+  document.querySelector('#editClientForm [name="edit-ciudad"]').value = cliente.ciudad || '';
+  document.getElementById('editClientForm').dataset.clienteId = clienteId;
+
+  openModal('editClientModal');
+}
+
+async function deleteCliente(clienteId) {
+  if (!confirm('¿Estás seguro de que quieres borrar este cliente?')) return;
+
+  const { error } = await window.sb.from('clientes').delete().eq('id', clienteId);
+  if (error) {
+    toast('No se pudo borrar: ' + error.message, 'error');
+    return;
+  }
+
+  toast('Cliente eliminado', 'success');
+  loadClientes();
+}
+
+document.getElementById('editClientForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const clienteId = e.target.dataset.clienteId;
+  const fd = new FormData(e.target);
+
+  const { error } = await window.sb.from('clientes').update({
+    nombre: fd.get('edit-nombre'),
+    documento: fd.get('edit-documento'),
+    correo: fd.get('edit-correo'),
+    ciudad: fd.get('edit-ciudad'),
+  }).eq('id', clienteId);
+
+  if (error) {
+    toast('Error al actualizar: ' + error.message, 'error');
+    return;
+  }
+
+  toast('Cliente actualizado', 'success');
+  closeModal('editClientModal');
+  loadClientes();
+});
+
 
 function renderInvoiceClientSelect() {
   const sel = document.getElementById('invoiceClientSelect');
