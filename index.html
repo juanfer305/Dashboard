@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Libro — Panel de ingresos y gastos</title>
+<title>Dashboard — Panel de ingresos y gastos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,12 +15,13 @@
 
   <!-- Sidebar -->
   <aside class="ledger-spine">
-    <div class="spine-mark">Ⓛ</div>
-    <h1 class="spine-title">Libro</h1>
+    <div class="spine-mark" aria-hidden="true"></div>
+    <h1 class="spine-title">Dashboard</h1>
     <nav class="spine-nav">
       <button class="nav-item active" data-view="resumen">Resumen</button>
       <button class="nav-item" data-view="movimientos">Movimientos</button>
       <button class="nav-item" data-view="cobros">Cuentas de cobro</button>
+      <button class="nav-item" data-view="creditos">Créditos</button>
       <button class="nav-item" data-view="clientes">Clientes</button>
     </nav>
     <div class="spine-status" id="connStatus">
@@ -130,6 +131,42 @@
           <tbody id="invoiceTableBody"></tbody>
         </table>
         <p class="empty-state hidden" id="invoiceEmpty">No has generado ninguna cuenta de cobro todavía.</p>
+      </div>
+    </section>
+
+    <!-- CRÉDITOS -->
+    <section class="view hidden" id="view-creditos">
+      <header class="view-head">
+        <div>
+          <p class="eyebrow">Cartera</p>
+          <h2>Créditos</h2>
+        </div>
+        <button class="btn-primary" id="openCreditModal">+ Nuevo crédito</button>
+      </header>
+
+      <div class="ledger-strip credit-strip">
+        <div class="ledger-col debit">
+          <span class="ledger-label">Créditos abiertos</span>
+          <span class="ledger-amount" id="totalCreditosAbiertos">0</span>
+        </div>
+        <div class="ledger-col balance">
+          <span class="ledger-label">Saldo pendiente</span>
+          <span class="ledger-amount" id="totalSaldoPendiente">$0</span>
+        </div>
+        <div class="ledger-col credit">
+          <span class="ledger-label">Pagos recibidos</span>
+          <span class="ledger-amount" id="totalPagosRecibidos">$0</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <table class="tx-table">
+          <thead>
+            <tr><th>Cliente</th><th>Fecha</th><th>Total</th><th>Saldo</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="creditTableBody"></tbody>
+        </table>
+        <p class="empty-state hidden" id="creditEmpty">No hay créditos registrados.</p>
       </div>
     </section>
 
@@ -268,6 +305,67 @@
           <button type="button" class="btn-ghost" data-close="invoiceModal">Cancelar</button>
           <button type="submit" class="btn-primary">Generar PDF</button>
         </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: crédito -->
+<div class="modal-backdrop hidden" id="creditModal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3>Nuevo crédito</h3>
+      <button class="modal-close" data-close="creditModal">×</button>
+    </div>
+    <form id="creditForm">
+      <div class="form-row">
+        <label>
+          <span>Cliente</span>
+          <select name="clienteId" id="creditClientSelect" required></select>
+        </label>
+        <label>
+          <span>Fecha</span>
+          <input type="date" name="fecha" required>
+        </label>
+      </div>
+      <label class="form-row-full">
+        <span>Valor total (COP)</span>
+        <input type="number" name="monto" min="0" step="1" required placeholder="0">
+      </label>
+      <label class="form-row-full">
+        <span>Descripción</span>
+        <input type="text" name="descripcion" placeholder="Ej. Entrega de ropa a crédito para cliente X">
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="creditModal">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar crédito</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: abono -->
+<div class="modal-backdrop hidden" id="paymentModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Registrar abono</h3>
+      <button class="modal-close" data-close="paymentModal">×</button>
+    </div>
+    <form id="paymentForm">
+      <input type="hidden" name="creditoId">
+      <div class="form-row">
+        <label>
+          <span>Monto del abono</span>
+          <input type="number" name="pago-monto" min="0" step="1" required placeholder="0">
+        </label>
+        <label>
+          <span>Fecha</span>
+          <input type="date" name="pago-fecha" required>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="paymentModal">Cancelar</button>
+        <button type="submit" class="btn-primary">Registrar abono</button>
       </div>
     </form>
   </div>

@@ -86,14 +86,12 @@ body::before{
   border-right:1px solid rgba(0,188,212,0.1);
 }
 .spine-mark{
-  font-family:'Fraunces',serif;
-  font-size:32px;
-  background:linear-gradient(135deg, #00BCD4, #FF7043);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  background-clip:text;
-  margin-bottom:8px;
-  font-weight:700;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  margin-bottom:16px;
+  background:radial-gradient(circle at 30% 30%, rgba(0,188,212,0.18), transparent 40%), radial-gradient(circle at 70% 70%, rgba(255,112,67,0.14), transparent 32%), rgba(255,255,255,0.08);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 12px 24px rgba(0,0,0,0.08);
 }
 .spine-title{
   font-family:'Fraunces',serif;

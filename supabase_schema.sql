@@ -41,6 +41,17 @@ create table if not exists cuentas_cobro (
   created_at timestamptz default now()
 );
 
+create table if not exists creditos (
+  id uuid primary key default gen_random_uuid(),
+  cliente_id uuid references clientes(id) on delete set null,
+  fecha date not null,
+  monto numeric not null check (monto >= 0),
+  pagado numeric not null default 0 check (pagado >= 0),
+  saldo_restante numeric not null check (saldo_restante >= 0),
+  descripcion text,
+  created_at timestamptz default now()
+);
+
 -- ============================================
 -- Storage bucket
 -- Supabase Storage no crea buckets por SQL. Crea uno manualmente en el dashboard:

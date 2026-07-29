@@ -1,7 +1,6 @@
 // ============================================
-// Libro — app.js
-// Maneja: navegación, movimientos (Supabase), clientes (Supabase),
-// cuentas de cobro (Supabase + API externa de PDF/IA/email)
+// Dashboard — app.js
+// Maneja: navegación, movimientos, créditos, clientes y cuentas de cobro
 // ============================================
 
 const state = {
@@ -10,6 +9,7 @@ const state = {
   movimientos: [],
   clientes: [],
   cuentas: [],
+  creditos: [],
 };
 
 const fmtCOP = (n) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n || 0);
@@ -466,6 +466,126 @@ document.getElementById('openInvoiceModal').addEventListener('click', () => {
   toast('Abierta la app de cuentas de cobro en una nueva pestaña', 'success');
 });
 
+// ============================================
+// CRÉDITOS
+// ============================================
+
+async function loadCreditos() {
+  const { data, error } = await window.sb.from('creditos').select('*, clientes(nombre)').order('fecha', { ascending: false });
+  if (error) { console.error(error); return; }
+  state.creditos = data || [];
+  renderCreditos();
+}
+
+function renderCreditos() {
+  const tbody = document.getElementById('creditTableBody');
+  const openCreditos = state.creditos.filter(c => Number(c.saldo_restante) > 0);
+  const pagosRecibidos = state.creditos.reduce((sum, c) => sum + Number(c.pagado), 0);
+  const saldoPendiente = state.creditos.reduce((sum, c) => sum + Number(c.saldo_restante), 0);
+
+  document.getElementById('totalCreditosAbiertos').textContent = openCreditos.length;
+  document.getElementById('totalPagosRecibidos').textContent = fmtCOP(pagosRecibidos);
+  document.getElementById('totalSaldoPendiente').textContent = fmtCOP(saldoPendiente);
+  document.getElementById('creditEmpty').classList.toggle('hidden', state.creditos.length > 0);
+
+  tbody.innerHTML = state.creditos.map(c => `
+    <tr>
+      <td>${escapeHtml(c.clientes?.nombre || 'Cliente no encontrado')}</td>
+      <td>${formatDate(c.fecha)}</td>
+      <td class="right">${fmtCOP(c.monto)}</td>
+      <td class="right">${fmtCOP(c.saldo_restante)}</td>
+      <td><span class="badge ${c.saldo_restante > 0 ? 'pendiente' : 'enviada'}">${c.saldo_restante > 0 ? 'Pendiente' : 'Pagado'}</span></td>
+      <td class="actions-cell">
+        <button class="btn-ghost btn-sm" data-pay-credit="${c.id}">Abonar</button>
+        <button class="btn-danger btn-sm" data-del-credit="${c.id}">Eliminar</button>
+      </td>
+    </tr>
+  `).join('');
+
+  tbody.querySelectorAll('[data-pay-credit]').forEach(btn => {
+    btn.addEventListener('click', () => openPaymentModal(btn.dataset.payCredit));
+  });
+  tbody.querySelectorAll('[data-del-credit]').forEach(btn => {
+    btn.addEventListener('click', () => deleteCredito(btn.dataset.delCredit));
+  });
+}
+
+function renderCreditosClientSelect() {
+  const sel = document.getElementById('creditClientSelect');
+  sel.innerHTML = state.clientes.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`).join('');
+}
+
+document.getElementById('openCreditModal').addEventListener('click', () => {
+  document.getElementById('creditForm').reset();
+  document.querySelector('#creditForm [name="fecha"]').value = new Date().toISOString().slice(0, 10);
+  renderCreditosClientSelect();
+  openModal('creditModal');
+});
+
+document.getElementById('creditForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const monto = Number(fd.get('monto'));
+  const payload = {
+    cliente_id: fd.get('clienteId'),
+    fecha: fd.get('fecha'),
+    monto,
+    saldo_restante: monto,
+    pagado: 0,
+    descripcion: fd.get('descripcion'),
+  };
+  const { error } = await window.sb.from('creditos').insert(payload);
+  if (error) { toast('Error al guardar crédito: ' + error.message, 'error'); return; }
+  toast('Crédito guardado', 'success');
+  closeModal('creditModal');
+  loadCreditos();
+});
+
+function openPaymentModal(creditoId) {
+  const credito = state.creditos.find(c => String(c.id) === String(creditoId));
+  if (!credito) return;
+  const form = document.getElementById('paymentForm');
+  form.reset();
+  form.querySelector('[name="creditoId"]').value = creditoId;
+  form.querySelector('[name="pago-fecha"]').value = new Date().toISOString().slice(0, 10);
+  openModal('paymentModal');
+}
+
+document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const creditoId = fd.get('creditoId');
+  const pagoMonto = Number(fd.get('pago-monto'));
+  const credito = state.creditos.find(c => String(c.id) === creditoId);
+  if (!credito) {
+    toast('No se encontró el crédito', 'error');
+    return;
+  }
+  const nuevoPagado = Number(credito.pagado) + pagoMonto;
+  const nuevoSaldo = Number(credito.monto) - nuevoPagado;
+  const { error } = await window.sb.from('creditos').update({
+    pagado: nuevoPagado,
+    saldo_restante: nuevoSaldo < 0 ? 0 : nuevoSaldo,
+  }).eq('id', creditoId);
+  if (error) {
+    toast('Error al registrar pago: ' + error.message, 'error');
+    return;
+  }
+  toast('Abono registrado', 'success');
+  closeModal('paymentModal');
+  loadCreditos();
+});
+
+async function deleteCredito(creditoId) {
+  if (!confirm('¿Eliminar este crédito?')) return;
+  const { error } = await window.sb.from('creditos').delete().eq('id', creditoId);
+  if (error) { toast('Error al eliminar crédito: ' + error.message, 'error'); return; }
+  toast('Crédito eliminado', 'success');
+  loadCreditos();
+}
+
+
+
 async function openEditCuentaModal(cuentaId) {
   const cuenta = state.cuentas.find(c => String(c.id) === cuentaId);
   if (!cuenta) return;
@@ -548,4 +668,4 @@ document.querySelectorAll('.modal-backdrop').forEach(bd => {
 // Init
 // ============================================
 await checkConnection();
-await Promise.all([loadMovimientos(), loadClientes(), loadCuentas()]);
+await Promise.all([loadMovimientos(), loadClientes(), loadCuentas(), loadCreditos()]);
