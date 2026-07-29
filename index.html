@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libro — Panel de ingresos y gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Sidebar -->
+  <aside class="ledger-spine">
+    <div class="spine-mark">Ⓛ</div>
+    <h1 class="spine-title">Libro</h1>
+    <nav class="spine-nav">
+      <button class="nav-item active" data-view="resumen">Resumen</button>
+      <button class="nav-item" data-view="movimientos">Movimientos</button>
+      <button class="nav-item" data-view="cobros">Cuentas de cobro</button>
+      <button class="nav-item" data-view="clientes">Clientes</button>
+    </nav>
+    <div class="spine-status" id="connStatus">
+      <span class="dot"></span> <span id="connStatusText">Conectando…</span>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- RESUMEN -->
+    <section class="view" id="view-resumen">
+      <header class="view-head">
+        <div>
+          <p class="eyebrow">Balance general</p>
+          <h2>Cómo va tu mes</h2>
+        </div>
+        <div class="month-picker">
+          <button id="prevMonth" aria-label="Mes anterior">‹</button>
+          <span id="currentMonthLabel">Julio 2026</span>
+          <button id="nextMonth" aria-label="Mes siguiente">›</button>
+        </div>
+      </header>
+
+      <div class="ledger-strip">
+        <div class="ledger-col debit">
+          <span class="ledger-label">Ingresos</span>
+          <span class="ledger-amount" id="totalIngresos">$0</span>
+        </div>
+        <div class="ledger-col credit">
+          <span class="ledger-label">Gastos</span>
+          <span class="ledger-amount" id="totalGastos">$0</span>
+        </div>
+        <div class="ledger-col balance" id="balanceCol">
+          <span class="ledger-label">Balance</span>
+          <span class="ledger-amount" id="totalBalance">$0</span>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Últimos 6 meses</h3>
+          <canvas id="chartTrend" height="140"></canvas>
+        </div>
+        <div class="card">
+          <h3>Gastos por categoría</h3>
+          <canvas id="chartCategorias" height="140"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head-row">
+          <h3>Movimientos recientes</h3>
+          <button class="btn-ghost" data-goto="movimientos">Ver todos →</button>
+        </div>
+        <div id="recentList" class="tx-list"></div>
+      </div>
+    </section>
+
+    <!-- MOVIMIENTOS -->
+    <section class="view hidden" id="view-movimientos">
+      <header class="view-head">
+        <div>
+          <p class="eyebrow">Registro</p>
+          <h2>Movimientos</h2>
+        </div>
+        <button class="btn-primary" id="openTxModal">+ Nuevo movimiento</button>
+      </header>
+
+      <div class="filters">
+        <select id="filterType" aria-label="Filtrar por tipo">
+          <option value="">Todos</option>
+          <option value="ingreso">Ingresos</option>
+          <option value="gasto">Gastos</option>
+        </select>
+        <select id="filterCategory" aria-label="Filtrar por categoría">
+          <option value="">Toda categoría</option>
+        </select>
+        <input type="search" id="filterSearch" aria-label="Buscar por descripción" placeholder="Buscar por descripción…">
+      </div>
+
+      <div class="card">
+        <table class="tx-table">
+          <thead>
+            <tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th>Tipo</th><th class="right">Monto</th><th></th></tr>
+          </thead>
+          <tbody id="txTableBody"></tbody>
+        </table>
+        <p class="empty-state hidden" id="txEmpty">Aún no hay movimientos registrados. Agrega el primero arriba.</p>
+      </div>
+    </section>
+
+    <!-- CUENTAS DE COBRO -->
+    <section class="view hidden" id="view-cobros">
+      <header class="view-head">
+        <div>
+          <p class="eyebrow">Facturación</p>
+          <h2>Cuentas de cobro</h2>
+        </div>
+        <button class="btn-primary" id="openInvoiceModal">+ Nueva cuenta de cobro</button>
+      </header>
+
+      <div class="card">
+        <table class="tx-table">
+          <thead>
+            <tr><th>N°</th><th>Cliente</th><th>Fecha</th><th class="right">Total</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="invoiceTableBody"></tbody>
+        </table>
+        <p class="empty-state hidden" id="invoiceEmpty">No has generado ninguna cuenta de cobro todavía.</p>
+      </div>
+    </section>
+
+    <!-- CLIENTES -->
+    <section class="view hidden" id="view-clientes">
+      <header class="view-head">
+        <div>
+          <p class="eyebrow">Directorio</p>
+          <h2>Clientes</h2>
+        </div>
+        <button class="btn-primary" id="openClientModal">+ Nuevo cliente</button>
+      </header>
+
+      <div class="card">
+        <div id="clientList" class="client-grid"></div>
+        <p class="empty-state hidden" id="clientEmpty">Aún no tienes clientes guardados.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL: movimiento -->
+<div class="modal-backdrop hidden" id="txModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Nuevo movimiento</h3>
+      <button class="modal-close" data-close="txModal">×</button>
+    </div>
+    <form id="txForm">
+      <div class="form-row">
+        <label>
+          <span>Tipo</span>
+          <select name="tipo" required>
+            <option value="ingreso">Ingreso</option>
+            <option value="gasto">Gasto</option>
+          </select>
+        </label>
+        <label>
+          <span>Monto (COP)</span>
+          <input type="number" name="monto" min="0" step="1" required placeholder="0">
+        </label>
+      </div>
+      <div class="form-row">
+        <label>
+          <span>Fecha</span>
+          <input type="date" name="fecha" required>
+        </label>
+        <label>
+          <span>Categoría</span>
+          <input type="text" name="categoria" list="categoriaList" placeholder="Ej. Servicios, Transporte…" required>
+          <datalist id="categoriaList"></datalist>
+        </label>
+      </div>
+      <label class="form-row-full">
+        <span>Descripción</span>
+        <input type="text" name="descripcion" placeholder="¿De qué se trata?">
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="txModal">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar movimiento</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: cliente -->
+<div class="modal-backdrop hidden" id="clientModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Nuevo cliente</h3>
+      <button class="modal-close" data-close="clientModal">×</button>
+    </div>
+    <form id="clientForm">
+      <label class="form-row-full">
+        <span>Nombre / Razón social</span>
+        <input type="text" name="nombre" required>
+      </label>
+      <div class="form-row">
+        <label>
+          <span>NIT / Cédula</span>
+          <input type="text" name="documento">
+        </label>
+        <label>
+          <span>Correo</span>
+          <input type="email" name="correo">
+        </label>
+      </div>
+      <label class="form-row-full">
+        <span>Ciudad</span>
+        <input type="text" name="ciudad">
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" data-close="clientModal">Cancelar</button>
+        <button type="submit" class="btn-primary">Guardar cliente</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: cuenta de cobro -->
+<div class="modal-backdrop hidden" id="invoiceModal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3>Nueva cuenta de cobro</h3>
+      <button class="modal-close" data-close="invoiceModal">×</button>
+    </div>
+    <form id="invoiceForm">
+      <div class="form-row">
+        <label>
+          <span>Cliente</span>
+          <select name="clienteId" id="invoiceClientSelect" required></select>
+        </label>
+        <label>
+          <span>Fecha</span>
+          <input type="date" name="fecha" required>
+        </label>
+      </div>
+
+      <div class="form-row-full">
+        <span>Descripción del servicio</span>
+        <div class="ai-input-row">
+          <input type="text" name="descripcion" id="invoiceDescripcion" aria-label="Descripción del servicio" placeholder="Ej. Diseño de logo y tarjetas de presentación" required>
+          <button type="button" class="btn-ghost" id="btnMejorarDesc">✨ Mejorar con IA</button>
+        </div>
+      </div>
+
+      <label class="form-row-full">
+        <span>Valor total (COP)</span>
+        <input type="number" name="valor" min="0" step="1" required placeholder="0">
+      </label>
+
+      <div class="modal-actions space-between">
+        <span class="hint" id="invoiceHint"></span>
+        <div>
+          <button type="button" class="btn-ghost" data-close="invoiceModal">Cancelar</button>
+          <button type="submit" class="btn-primary">Generar PDF</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<!-- Estado y datos que la app va a leer/inyectar para render-pdf (localStorage key esperada por tu API) -->
+<div id="invoice-preview" style="display:none;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" integrity="sha384-fPWur1rx/DE6YtXP/x0MD6dd90RgnVsz5yX/DIg7CcVAnTBZsENWuIcpvVTM39ti" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
+<script src="config.js"></script>
+<script src="supabaseClient.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
