@@ -6,24 +6,24 @@
    ============================================ */
 
 :root{
-  --ink:#1C2321;
-  --paper:#F7F4EC;
+  --ink:#0F1419;
+  --paper:#F5F7FA;
   --paper-raised:#FFFFFF;
-  --line:#DEDACB;
-  --green:#2F5D50;
-  --green-soft:#E4EEE9;
-  --red:#9A3B32;
-  --red-soft:#F3E4E1;
-  --gold:#B98A2E;
-  --muted:#736C5F;
+  --line:#E8EBF0;
+  --green:#00BCD4;
+  --green-soft:#E0F7FA;
+  --red:#FF7043;
+  --red-soft:#FFE0D6;
+  --gold:#FF7043;
+  --muted:#667085;
   --radius:10px;
-  --shadow: 0 1px 2px rgba(28,35,33,0.06), 0 8px 24px rgba(28,35,33,0.05);
+  --shadow: 0 1px 2px rgba(15,20,25,0.06), 0 8px 24px rgba(15,20,25,0.08);
 }
 
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
-  background: radial-gradient(circle at top left, rgba(47,93,80,0.12), transparent 22%), radial-gradient(circle at bottom right, rgba(185,138,46,0.08), transparent 20%), var(--paper);
+  background: radial-gradient(circle at top left, rgba(0,188,212,0.08), transparent 22%), radial-gradient(circle at bottom right, rgba(255,112,67,0.08), transparent 20%), var(--paper);
   color:var(--ink);
   font-family:'Inter',sans-serif;
   -webkit-font-smoothing:antialiased;
@@ -34,7 +34,7 @@ body::before{
   position:fixed;
   inset:0;
   pointer-events:none;
-  background:radial-gradient(circle at 15% 20%, rgba(185,138,46,0.08), transparent 18%), radial-gradient(circle at 80% 10%, rgba(47,93,80,0.1), transparent 14%);
+  background:radial-gradient(circle at 15% 20%, rgba(255,112,67,0.06), transparent 18%), radial-gradient(circle at 80% 10%, rgba(0,188,212,0.08), transparent 14%);
 }
 
 .btn-sm{
@@ -122,9 +122,9 @@ body::before{
   padding-top:16px;
   border-top:1px solid rgba(247,244,236,0.12);
 }
-.dot{width:7px;height:7px;border-radius:50%;background:#C9A227;display:inline-block;}
-.dot.ok{background:#4C8C6E;}
-.dot.err{background:#B24A3E;}
+.dot{width:7px;height:7px;border-radius:50%;background:#FF7043;display:inline-block;}
+.dot.ok{background:#00BCD4;}
+.dot.err{background:#FF5722;}
 
 /* ---------- Main ---------- */
 .main{padding:36px 44px 60px;max-width:1180px;}
@@ -226,7 +226,7 @@ body::before{
 /* ---------- Buttons ---------- */
 .btn-primary{
   background:var(--green);
-  color:var(--paper);
+  color:white;
   border:none;
   padding:11px 18px;
   border-radius:7px;
@@ -236,7 +236,7 @@ body::before{
   cursor:pointer;
   transition:background .15s ease;
 }
-.btn-primary:hover{background:#264a3f;}
+.btn-primary:hover{background:#0097A7;}
 .btn-ghost{
   background:none;
   border:1px solid var(--line);
